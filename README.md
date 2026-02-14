@@ -300,17 +300,20 @@ AI_TRIP_ITINERARY_GENERATOR/
 
 ##  Running the Backend Locally
 
-Do these commands in the terminal of your text editor:
+Run the following commands in your terminal:
 
 ```text
-git clone https://github.com/yourusername/ai_trip_itinerary_generator.git
+git clone https://github.com/harry23yu/ai_trip_itinerary_generator.git
 cd ai_trip_itinerary_generator
 
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # macOS / Linux only
+.\venv\Scripts\Activate   # Windows only
 
 pip install -r requirements.txt
 ```
+
+**Important:** You need to have Git and Python installed in order for the above commands to work.
 
 Create a .env file with:
 
@@ -321,8 +324,8 @@ OPENAI_API_KEY=your_api_key_here
 **Important:** You need to have a working OpenAI API key to run the backend. To get an OpenAI API key, follow these four steps:
 
 1. Log in or create an [OpenAI](https://auth.openai.com/log-in) account.
-2. In order to have a working OpenAI API key, you need OpenAI credits. Go to the [billing page](https://platform.openai.com/settings/organization/billing/overview) to pay for credits. Calling OpenAI's API for the backend is very cheap; you can make several calls with just 1 cent! If you don't have any credits, I recommend you add $5, the minimum required amount on OpenAI.
-3. Once you have the money, you can start making API calls. Add an API key on [this page](https://platform.openai.com/api-keys). Make sure to keep your key secret!
+2. In order to have a working OpenAI API key, you need OpenAI credits. Go to the [billing page](https://platform.openai.com/settings/organization/billing/overview) to pay for credits. OpenAI API costs for this project are minimal; multiple itinerary generations typically cost under $0.01! If you do not have credits, OpenAI requires a minimum initial payment of $5.
+3. Once credits are added, you can generate an API key and begin making requests. Add an API key on [this page](https://platform.openai.com/api-keys). Make sure to keep your key secret!
 4. Copy and paste your secret key in the .env file (see above).
 
 Start the server by using this command:
@@ -343,7 +346,7 @@ Once you are at the URL above, follow these steps:
 2. Click Try it out
 3. Paste a JSON request body (see example in this README)
 4. Click Execute
-5. Wait for the itinerary to appear!
+5. View the itinerary in the response section.
 
 Generated PDFs with the itinerary will appear in:
 
