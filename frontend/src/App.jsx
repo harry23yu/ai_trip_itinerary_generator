@@ -1,89 +1,140 @@
 import { useState } from "react";
 
 function App() {
-  const [response, setResponse] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState("mode");
+  const [mode, setMode] = useState(null);
+  const [formData, setFormData] = useState({});
 
-  const generateTestItinerary = async () => {
-    setLoading(true);
-
-    const testPayload = {
-      trip_mode: "discover",
-      has_discovery_intent: false,
-      discovery_intent: null,
-      knows_trip_length: true,
-      days: 2,
-      people: 1,
-      transport_mode: "Driving",
-      origin_location: "Phoenix, AZ",
-      international_travel: false,
-      preferred_countries: null,
-      distance_preference: "100-200 miles",
-      has_dates: false,
-      date_range: null,
-      has_time_constraints: false,
-      time_constraints_detail: null,
-      area_structure: "Yes",
-      special_group_needs: ["None"],
-      accessibility_needs: false,
-      accessibility_details: null,
-      destination: null,
-      knows_trip_length_b: null,
-      days_b: null,
-      people_b: null,
-      budget_concern: false,
-      budget_amount: null,
-      weather_avoidance: [],
-      interests: null,
-      food_interest_level: 5,
-      cuisine_preferences: [],
-      cuisine_preferences_other_text: null,
-      shopping_interest_level: 3,
-      shopping_preferences: [],
-      shopping_preferences_other_text: null,
-      trip_purpose: null,
-      schedule_style: "Relaxed",
-      must_do: [],
-      must_avoid: [],
-      physical_activity_level: 5,
-      public_transit_comfort: 5,
-      nightlife: false,
-      photography_importance: 5,
-      desired_feelings: [],
-      travel_vs_depth: "More time traveling",
-      excluded_places: [],
-      start_time_preference: "9 AM",
-      start_time_other_text: null,
-      end_time_preference: "6 PM",
-      end_time_other_text: null,
-      additional_notes: null
-    };
-
-    const res = await fetch("http://127.0.0.1:8000/generate-itinerary", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(testPayload)
-    });
-
-    const data = await res.json();
-    setResponse(data);
-    setLoading(false);
+  const handleChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
     <div style={{ padding: "40px", fontFamily: "sans-serif" }}>
       <h1>AI Trip Itinerary Generator</h1>
 
-      <button onClick={generateTestItinerary}>
-        Generate Test Itinerary
-      </button>
+      {/* ===================== */}
+      {/* STEP 1 — MODE SELECT  */}
+      {/* ===================== */}
+      {step === "mode" && (
+        <div style={{ marginTop: "30px" }}>
+          <h2>How would you like to plan your trip?</h2>
 
-      {loading && <p>Generating itinerary...</p>}
+          <div style={{ marginTop: "20px" }}>
+            <button
+              style={{ marginRight: "20px", padding: "10px 20px" }}
+              onClick={() => {
+                setMode("A");
+                setStep("required");
+              }}
+            >
+              Option A — I don't know where I want to go
+            </button>
 
-      {response && (
-        <pre style={{ marginTop: "20px" }}>
-          {JSON.stringify(response, null, 2)}
-        </pre>
+            <button
+              style={{ padding: "10px 20px" }}
+              onClick={() => {
+                setMode("B");
+                setStep("required");
+              }}
+            >
+              Option B — I already know my destination
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== */}
+      {/* STEP 2 — REQUIRED     */}
+      {/* ===================== */}
+      {step === "required" && (
+        <div style={{ marginTop: "40px" }}>
+          <h2>Required Questions (Option {mode})</h2>
+
+          {/* ===== OPTION A REQUIRED SAMPLE ===== */}
+          {mode === "A" && (
+            <>
+              <div style={{ marginTop: "20px" }}>
+                <p>How many people are planning to go?</p>
+                <select
+                  onChange={(e) =>
+                    handleChange("people", e.target.value)
+                  }
+                >
+                  <option value="">Select</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3-4">3-4</option>
+                  <option value="5-6">5-6</option>
+                </select>
+              </div>
+
+              <div style={{ marginTop: "20px" }}>
+                <p>Where are you currently?</p>
+                <input
+                  type="text"
+                  placeholder="City, Country"
+                  onChange={(e) =>
+                    handleChange("origin_location", e.target.value)
+                  }
+                />
+              </div>
+            </>
+          )}
+
+          {/* ===== OPTION B REQUIRED SAMPLE ===== */}
+          {mode === "B" && (
+            <>
+              <div style={{ marginTop: "20px" }}>
+                <p>Where is your trip?</p>
+                <input
+                  type="text"
+                  placeholder="City or area"
+                  onChange={(e) =>
+                    handleChange("destination", e.target.value)
+                  }
+                />
+              </div>
+
+              <div style={{ marginTop: "20px" }}>
+                <p>How many people are going?</p>
+                <select
+                  onChange={(e) =>
+                    handleChange("people_b", e.target.value)
+                  }
+                >
+                  <option value="">Select</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3-4">3-4</option>
+                  <option value="5-6">5-6</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          <div style={{ marginTop: "40px" }}>
+            <button
+              onClick={() => {
+                console.log("Form Data:", formData);
+                setStep("optional");
+              }}
+              style={{ padding: "10px 20px" }}
+            >
+              Continue to Optional Questions
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TEMP OPTIONAL SCREEN */}
+      {step === "optional" && (
+        <div style={{ marginTop: "40px" }}>
+          <h2>Optional Questions Coming Next</h2>
+        </div>
       )}
     </div>
   );
