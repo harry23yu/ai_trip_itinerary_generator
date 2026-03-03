@@ -24,10 +24,21 @@ function LandingPage() {
 }
 
 // Renders the validated itinerary JSON inline on the page
-function ItineraryDisplay({ itinerary }) {
+function ItineraryDisplay({ itinerary, pdfPath }) {
   if (!itinerary) return null;
 
   const { days, summary } = itinerary;
+
+  const handleDownload = () => {
+    if (!pdfPath) return;
+    const url = `http://127.0.0.1:8000/download-itinerary/${encodeURIComponent(pdfPath)}`;
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "itinerary.pdf";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
 
   const sectionStyle = {
     marginBottom: "0.5rem",
@@ -46,7 +57,14 @@ function ItineraryDisplay({ itinerary }) {
 
   return (
     <div style={{ marginTop: "2rem", borderTop: "1px solid #ccc", paddingTop: "1.5rem" }}>
-      <h2>Your Itinerary</h2>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+        <h2 style={{ margin: 0 }}>Your Itinerary</h2>
+        {pdfPath && (
+          <button onClick={handleDownload}>
+            Download as PDF
+          </button>
+        )}
+      </div>
 
       {days && days.map((dayData) => (
         <div key={dayData.day} style={{ marginBottom: "1.5rem" }}>
@@ -83,6 +101,7 @@ function QuestionPage({ requiredQs, optionalQs, title }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [itinerary, setItinerary] = useState(null);
+  const [pdfPath, setPdfPath] = useState(null);
 
   const handleChange = (id, value) => {
     setFormData((prev) => ({ ...prev, [id]: value }));
@@ -95,33 +114,29 @@ function QuestionPage({ requiredQs, optionalQs, title }) {
   // Exception: budget follow-up (id "budget" / "budget_b") is optional even when visible.
   const optionalEvenWhenVisible = new Set(["budget", "budget_b"]);
 
-  // Helper: returns false if a question with otherTextId has "Other" selected but text is empty.
-  // Applies to ALL questions (required and optional) since the backend enforces this too.
-  const otherTextFilled = (q) => {
-    if (!q.otherTextId || !isVisible(q)) return true;
+  const hasRequiredAnswers = requiredQs.every((q) => {
+    if (!isVisible(q)) return true;
+    if (optionalEvenWhenVisible.has(q.id)) return true;
+
     const value = formData[q.id];
-    const otherSelected =
-      (q.type === "mc" && value === "Other") ||
-      (q.type === "cata" && Array.isArray(value) && value.includes("Other"));
-    if (!otherSelected) return true;
-    const otherText = formData[q.otherTextId];
-    return !!(otherText && String(otherText).trim() !== "");
-  };
+    if (value === undefined || value === null) return false;
+    if (typeof value === "string" && value.trim() === "") return false;
+    if (Array.isArray(value) && value.length === 0) return false;
 
-  const hasRequiredAnswers =
-    requiredQs.every((q) => {
-      if (!isVisible(q)) return true;
-      if (optionalEvenWhenVisible.has(q.id)) return true;
+    // If required question has an "Other" option and user selected it, require the text.
+    if (q.otherTextId) {
+      const otherSelected =
+        (q.type === "mc" && value === "Other") ||
+        (q.type === "cata" && Array.isArray(value) && value.includes("Other"));
 
-      const value = formData[q.id];
-      if (value === undefined || value === null) return false;
-      if (typeof value === "string" && value.trim() === "") return false;
-      if (Array.isArray(value) && value.length === 0) return false;
+      if (otherSelected) {
+        const otherText = formData[q.otherTextId];
+        if (!otherText || String(otherText).trim() === "") return false;
+      }
+    }
 
-      return otherTextFilled(q);
-    }) &&
-    // Also block if any optional question has "Other" selected but text is empty
-    optionalQs.every((q) => otherTextFilled(q));
+    return true;
+  });
 
   const toBool = (v) => v === true || v === "Yes";
 
@@ -347,17 +362,7 @@ function QuestionPage({ requiredQs, optionalQs, title }) {
       // Backend returns JSON: { itinerary: { days: [...], summary: "..." }, pdf_path: "..." }
       const data = await response.json();
       setItinerary(data.itinerary);
-
-      // If the backend also generated a PDF, trigger a download automatically
-      if (data.pdf_path) {
-        const pdfUrl = `http://127.0.0.1:8000/download-itinerary/${encodeURIComponent(data.pdf_path)}`;
-        const link = document.createElement("a");
-        link.href = pdfUrl;
-        link.download = "itinerary.pdf";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
+      setPdfPath(data.pdf_path || null);
     } catch (e) {
       console.error(e);
       setError("Generation failed. Check the backend logs and try again.");
@@ -395,7 +400,7 @@ function QuestionPage({ requiredQs, optionalQs, title }) {
       </button>
 
       {/* Inline itinerary display, rendered below the button after generation */}
-      <ItineraryDisplay itinerary={itinerary} />
+      <ItineraryDisplay itinerary={itinerary} pdfPath={pdfPath} />
     </div>
   );
 }

@@ -518,7 +518,7 @@ def generate_itinerary(ctx: TripContext):
             {"role": "user", "content": prompt},
         ],
         temperature=0.7,
-        max_tokens=1200,
+        max_tokens=16384,
     )
 
     raw_output = completion.choices[0].message.content
