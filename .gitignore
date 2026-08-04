@@ -9,3 +9,6 @@ __pycache__/
 # Files
 generated_pdfs/
 *.pdf
+
+# macOS
+.DS_Store

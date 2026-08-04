@@ -8,13 +8,12 @@ Unlike generic AI travel planners, this project is designed to reduce hallucinat
 
 ## Project Status
 
-**In active development. Backend is done, frontend in progress.**
+**Complete. This is a backend-only project, used through its API.**
 
 - Backend pipeline is functional end-to-end
 - Both trip modes (discover + known destination) work
 - Structured itinerary JSON validation implemented
 - PDF itinerary export implemented
-- Prompt and itinerary refinement ongoing
 
 ---
 
@@ -79,7 +78,6 @@ AI_TRIP_ITINERARY_GENERATOR/
   ├── itinerary_schema.py
   ├── main.py
   ├── pdf_generator.py
-├── frontend/
 ├── generated_pdfs/             # Ignored
 ├── venv/                       # Ignored
 ├── .env                        # Ignored
@@ -286,15 +284,6 @@ AI_TRIP_ITINERARY_GENERATOR/
   }
 }
 ```
-
----
-
-## Planned Improvements
-
-- Improve itinerary accuracy and constraint handling
-- Build frontend (question flow + itinerary view)
-- Add PDF download from frontend
-- Add sharing/export options
 
 ---
 
